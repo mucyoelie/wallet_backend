@@ -1,9 +1,18 @@
 import express from "express";
-import { getAccounts, createAccount } from "../controllers/accountsController.js";
+import {
+    getAccounts,
+    getAccountById,
+    createAccount,
+    updateAccount,
+    deleteAccount
+} from "../controllers/accountsController.js";
 
 const router = express.Router();
 
 router.get("/", getAccounts);
+router.get("/:id", getAccountById);
 router.post("/", createAccount);
+router.put("/:id", updateAccount);
+router.delete("/:id", deleteAccount);
 
 export default router;

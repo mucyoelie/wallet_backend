@@ -1,8 +1,9 @@
 import express from "express";
-import { getReportByDate } from "../controllers/reportsController.js";
+import { getReport } from "../controllers/reportsController.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getReportByDate);
+router.get("/", verifyToken, getReport);
 
 export default router;

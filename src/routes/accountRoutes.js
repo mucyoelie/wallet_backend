@@ -1,18 +1,17 @@
 import express from "express";
 import {
-    getAccounts,
-    getAccountById,
-    createAccount,
-    updateAccount,
-    deleteAccount
+  getAccounts,
+  createAccount,
+  updateAccount,
+  deleteAccount,
 } from "../controllers/accountsController.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getAccounts);
-router.get("/:id", getAccountById);
-router.post("/", createAccount);
-router.put("/:id", updateAccount);
-router.delete("/:id", deleteAccount);
+router.get("/", verifyToken, getAccounts);
+router.post("/", verifyToken, createAccount);
+router.put("/:id", verifyToken, updateAccount);
+router.delete("/:id", verifyToken, deleteAccount);
 
 export default router;

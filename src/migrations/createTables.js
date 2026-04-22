@@ -1,6 +1,8 @@
 import db from "../config/db.js";
 
-// Users table
+// =====================
+// USERS TABLE
+// =====================
 db.run(`
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -10,6 +12,10 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )
 `);
+
+// =====================
+// TOKEN BLACKLIST
+// =====================
 db.run(`
   CREATE TABLE IF NOT EXISTS token_blacklist (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,36 +23,56 @@ db.run(`
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
-// Accounts table
+
+
+// =====================
+// ACCOUNTS (belongs to USER)
+// =====================
 db.run(`
 CREATE TABLE IF NOT EXISTS accounts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  FOREIGN KEY(user_id) REFERENCES users(id)
 )
 `);
 
-// Categories table
+
+// =====================
+// CATEGORIES (belongs to USER)
+// =====================
 db.run(`
 CREATE TABLE IF NOT EXISTS categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  FOREIGN KEY(user_id) REFERENCES users(id)
 )
 `);
 
-// Subcategories table
+
+// =====================
+// SUBCATEGORIES (belongs to CATEGORY + USER)
+// =====================
 db.run(`
 CREATE TABLE IF NOT EXISTS subcategories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  category_id INTEGER,
+  user_id INTEGER NOT NULL,
+  category_id INTEGER NOT NULL,
   name TEXT NOT NULL,
-  FOREIGN KEY (category_id) REFERENCES categories(id)
+  FOREIGN KEY (category_id) REFERENCES categories(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
 )
 `);
 
-// Transactions table
+
+// =====================
+// TRANSACTIONS (belongs to USER)
+// =====================
 db.run(`
 CREATE TABLE IF NOT EXISTS transactions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
   account_id INTEGER NOT NULL,
   category_id INTEGER,
   subcategory_id INTEGER,
@@ -54,21 +80,28 @@ CREATE TABLE IF NOT EXISTS transactions (
   amount REAL NOT NULL,
   description TEXT,
   date TEXT NOT NULL,
+
+  FOREIGN KEY(user_id) REFERENCES users(id),
   FOREIGN KEY(account_id) REFERENCES accounts(id),
   FOREIGN KEY(category_id) REFERENCES categories(id),
   FOREIGN KEY(subcategory_id) REFERENCES subcategories(id)
 )
 `);
 
-// Budgets table
+
+// =====================
+// BUDGETS (belongs to USER)
+// =====================
 db.run(`
 CREATE TABLE IF NOT EXISTS budgets (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
   amount REAL NOT NULL,
   period TEXT NOT NULL,
   start_date TEXT NOT NULL,
-  end_date TEXT NOT NULL
+  end_date TEXT NOT NULL,
+  FOREIGN KEY(user_id) REFERENCES users(id)
 )
 `);
 
-console.log("All tables created successfully.");
+console.log("All tables created with USER relationships.");

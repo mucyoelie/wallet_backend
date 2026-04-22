@@ -1,107 +1,75 @@
 import db from "../config/db.js";
 
-
 // =====================
-// GET ALL ACCOUNTS
+// GET ALL ACCOUNTS (by user)
 // =====================
 export const getAccounts = (req, res) => {
-    db.all("SELECT * FROM accounts", [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
+  db.all(
+    `SELECT * FROM accounts WHERE user_id = ?`,
+    [req.user.id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
 };
-
-
-// =====================
-// GET SINGLE ACCOUNT
-// =====================
-export const getAccountById = (req, res) => {
-    const { id } = req.params;
-
-    db.get("SELECT * FROM accounts WHERE id = ?", [id], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(404).json({ error: "Account not found" });
-
-        res.json(row);
-    });
-};
-
 
 // =====================
 // CREATE ACCOUNT
 // =====================
 export const createAccount = (req, res) => {
-    const { name } = req.body;
+  const { name } = req.body;
 
-    if (!name) {
-        return res.status(400).json({ error: "Account name is required" });
+  if (!name) return res.status(400).json({ error: "Account name is required" });
+
+  db.run(
+    `INSERT INTO accounts (user_id, name) VALUES (?, ?)`,
+    [req.user.id, name],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+
+      res.json({ id: this.lastID, name });
     }
-
-    db.run(
-        "INSERT INTO accounts (name) VALUES (?)",
-        [name],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-
-            res.json({
-                id: this.lastID,
-                name
-            });
-        }
-    );
+  );
 };
-
 
 // =====================
 // UPDATE ACCOUNT
 // =====================
 export const updateAccount = (req, res) => {
-    const { id } = req.params;
-    const { name } = req.body;
+  const { id } = req.params;
+  const { name } = req.body;
 
-    if (!name) {
-        return res.status(400).json({ error: "Account name is required" });
+  db.run(
+    `UPDATE accounts SET name = ? WHERE id = ? AND user_id = ?`,
+    [name, id, req.user.id],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+
+      if (this.changes === 0)
+        return res.status(404).json({ error: "Account not found" });
+
+      res.json({ message: "Account updated", id, name });
     }
-
-    db.run(
-        "UPDATE accounts SET name = ? WHERE id = ?",
-        [name, id],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-
-            if (this.changes === 0) {
-                return res.status(404).json({ error: "Account not found" });
-            }
-
-            res.json({
-                message: "Account updated successfully",
-                id,
-                name
-            });
-        }
-    );
+  );
 };
-
 
 // =====================
 // DELETE ACCOUNT
 // =====================
 export const deleteAccount = (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    db.run(
-        "DELETE FROM accounts WHERE id = ?",
-        [id],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
+  db.run(
+    `DELETE FROM accounts WHERE id = ? AND user_id = ?`,
+    [id, req.user.id],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
 
-            if (this.changes === 0) {
-                return res.status(404).json({ error: "Account not found" });
-            }
+      if (this.changes === 0)
+        return res.status(404).json({ error: "Account not found" });
 
-            res.json({
-                message: "Account deleted successfully"
-            });
-        }
-    );
+      res.json({ message: "Account deleted" });
+    }
+  );
 };
